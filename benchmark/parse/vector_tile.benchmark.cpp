@@ -5,8 +5,15 @@
 
 using namespace mbgl;
 
+#ifdef __ANDROID__
+static const std::string PATH_PREFIX = "/sdcard/benchmark/";
+#else
+static const std::string PATH_PREFIX = "";
+#endif
+
 static void Parse_VectorTile(benchmark::State& state) {
-    auto data = std::make_shared<std::string>(util::read_file("test/fixtures/api/assets/streets/10-163-395.vector.pbf"));
+    auto data = std::make_shared<std::string>(
+        util::read_file(PATH_PREFIX + "test/fixtures/api/assets/streets/10-163-395.vector.pbf"));
 
     while (state.KeepRunning()) {
         std::size_t length = 0;

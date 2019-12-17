@@ -5,6 +5,7 @@ workflows:
   mbgl-next:
     jobs:
       - next-sanity-checks
+      - next-android-benchmark-runner
       - next-android-render-test-runner
       - next-baselines:
           requires:
@@ -665,6 +666,17 @@ commands:
           fi
 
 jobs:
+  next-android-benchmark-runner:
+    executor: ubuntu-disco
+    steps:
+      - checkout
+      - next-prepare
+      - run:
+          name: Build BenchmarkRunner APK
+          command: |
+            cd benchmark/android
+            ./gradlew --parallel --max-workers=8 -Pmapbox.abis=arm64-v8a app:assembleRelease
+      - next-save
   next-android-render-test-runner:
     executor: ubuntu-disco
     steps:

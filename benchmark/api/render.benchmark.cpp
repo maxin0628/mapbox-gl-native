@@ -21,7 +21,13 @@ using namespace mbgl;
 
 namespace {
 
-static std::string cachePath { "benchmark/fixtures/api/cache.db" };
+#ifdef __ANDROID__
+static const std::string PATH_PREFIX = "/sdcard/";
+#else
+static const std::string PATH_PREFIX = "";
+#endif
+
+static std::string cachePath{PATH_PREFIX + "benchmark/fixtures/api/cache.db"};
 constexpr double pixelRatio { 1.0 };
 constexpr Size size { 1000, 1000 };
 
@@ -35,10 +41,10 @@ public:
 };
 
 static void prepare(Map& map, optional<std::string> json = {}) {
-    map.getStyle().loadJSON(json ? *json : util::read_file("benchmark/fixtures/api/style.json"));
+    map.getStyle().loadJSON(json ? *json : util::read_file(PATH_PREFIX + "benchmark/fixtures/api/style.json"));
     map.jumpTo(CameraOptions().withCenter(LatLng { 40.726989, -73.992857 }).withZoom(15.0)); // Manhattan
 
-    auto image = decodeImage(util::read_file("benchmark/fixtures/api/default_marker.png"));
+    auto image = decodeImage(util::read_file(PATH_PREFIX + "benchmark/fixtures/api/default_marker.png"));
     map.getStyle().addImage(std::make_unique<style::Image>("test-icon", std::move(image), 1.0));
 }
 
@@ -63,7 +69,7 @@ static void API_renderStill_reuse_map_formatted_labels(::benchmark::State& state
     Map map { frontend, MapObserver::nullObserver(),
               MapOptions().withMapMode(MapMode::Static).withSize(size).withPixelRatio(pixelRatio),
               ResourceOptions().withCachePath(cachePath).withAccessToken("foobar") };
-    prepare(map, util::read_file("benchmark/fixtures/api/style_formatted_labels.json"));
+    prepare(map, util::read_file(PATH_PREFIX + "benchmark/fixtures/api/style_formatted_labels.json"));
 
     while (state.KeepRunning()) {
         frontend.render(map);

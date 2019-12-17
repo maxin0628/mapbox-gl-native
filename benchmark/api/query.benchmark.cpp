@@ -15,24 +15,34 @@ using namespace mbgl;
 
 namespace {
 
+#ifdef __ANDROID__
+static const std::string PATH_PREFIX = "/sdcard/";
+#else
+static const std::string PATH_PREFIX = "";
+#endif
+
 class QueryBenchmark {
 public:
     QueryBenchmark() {
         NetworkStatus::Set(NetworkStatus::Status::Offline);
 
-        map.getStyle().loadJSON(util::read_file("benchmark/fixtures/api/style.json"));
+        map.getStyle().loadJSON(util::read_file(PATH_PREFIX + "benchmark/fixtures/api/style.json"));
         map.jumpTo(CameraOptions().withCenter(LatLng { 40.726989, -73.992857 }).withZoom(15.0)); // Manhattan
-        map.getStyle().addImage(std::make_unique<style::Image>("test-icon",
-            decodeImage(util::read_file("benchmark/fixtures/api/default_marker.png")), 1.0));
+        map.getStyle().addImage(std::make_unique<style::Image>(
+            "test-icon", decodeImage(util::read_file(PATH_PREFIX + "benchmark/fixtures/api/default_marker.png")), 1.0));
 
         frontend.render(map);
     }
 
     util::RunLoop loop;
     HeadlessFrontend frontend { { 1000, 1000 }, 1 };
-    Map map { frontend, MapObserver::nullObserver(),
-              MapOptions().withMapMode(MapMode::Static).withSize(frontend.getSize()),
-              ResourceOptions().withCachePath("benchmark/fixtures/api/cache.db").withAssetPath(".").withAccessToken("foobar") };
+    Map map{frontend,
+            MapObserver::nullObserver(),
+            MapOptions().withMapMode(MapMode::Static).withSize(frontend.getSize()),
+            ResourceOptions()
+                .withCachePath(PATH_PREFIX + "benchmark/fixtures/api/cache.db")
+                .withAssetPath(".")
+                .withAccessToken("foobar")};
     ScreenBox box{{ 0, 0 }, { 1000, 1000 }};
 };
 
